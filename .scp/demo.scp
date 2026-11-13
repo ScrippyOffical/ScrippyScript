@@ -1,0 +1,24 @@
+// A script that stays inside the subset the Rust front end parses today.
+
+fun greet(name: string, greeting = "Hello") {
+    return "${greeting}, ${name}!"
+}
+
+fun twice(n: number) {
+    return n * 2
+}
+
+global visits = 0
+let players = ["Steve", "Alex"]
+
+for name in players {
+    visits += 1
+    if visits >= 2 {
+        print(greet(name))
+    } else {
+        print(greet(name, "Yo"))
+    }
+}
+
+let stack = new ItemStack(material("DIAMOND_SWORD"), 1)
+ScrippyAI.ask("Twice 21 is ${twice(21)}")

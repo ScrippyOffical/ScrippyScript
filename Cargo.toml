@@ -1,0 +1,21 @@
+[package]
+name = "scrippy-script-core"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+description = "AST, lexer and parser for the Scrippy (.scp) scripting language"
+license = "GPL-3.0-only"
+repository = "https://github.com/ScrippyOffical/ScrippyScript"
+documentation = "https://docs.rs/scrippy-script-core"
+readme = "README.md"
+
+[dependencies]
+# Logos compiles to a DFA at build time, has no runtime dependencies and no
+# unsafe code. The derive macro runs at compile time only, so nothing extra
+# ends up in a wasm binary.
+logos = "0.16"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = "s"
