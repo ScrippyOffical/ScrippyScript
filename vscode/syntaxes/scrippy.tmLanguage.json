@@ -1,0 +1,277 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "ScrippyScript",
+  "scopeName": "source.scp",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#declarations" },
+    { "include": "#types" },
+    { "include": "#keywords" },
+    { "include": "#numbers" },
+    { "include": "#builtins" },
+    { "include": "#members" },
+    { "include": "#calls" },
+    { "include": "#operators" },
+    { "include": "#punctuation" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.scp",
+          "begin": "/\\*",
+          "end": "\\*/"
+        },
+        {
+          "name": "comment.line.double-slash.scp",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.line.number-sign.scp",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.scp",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            { "include": "#interpolation" },
+            {
+              "name": "constant.character.escape.scp",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.scp",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.scp",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "interpolation": {
+      "name": "meta.interpolation.scp",
+      "begin": "\\$\\{",
+      "beginCaptures": {
+        "0": { "name": "punctuation.section.interpolation.begin.scp" }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": { "name": "punctuation.section.interpolation.end.scp" }
+      },
+      "patterns": [
+        { "include": "source.scp" }
+      ]
+    },
+    "declarations": {
+      "patterns": [
+        {
+          "match": "\\b(fun)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "storage.type.function.scp" },
+            "2": { "name": "entity.name.function.scp" }
+          }
+        },
+        {
+          "match": "\\b(let|const|global)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "storage.type.scp" },
+            "2": { "name": "variable.other.readwrite.scp" }
+          }
+        },
+        {
+          "match": "\\b(on|every|after|command)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "keyword.other.scp" },
+            "2": { "name": "entity.name.function.scp" }
+          }
+        }
+      ]
+    },
+    "types": {
+      "match": "(:)\\s*(number|integer|double|boolean|string|text|player|world|material|entity|list|map|void|any)(\\?)?",
+      "captures": {
+        "1": { "name": "punctuation.separator.colon.scp" },
+        "2": { "name": "support.type.primitive.scp" },
+        "3": { "name": "keyword.operator.optional.scp" }
+      }
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.scp",
+          "match": "\\b(true|false)\\b"
+        },
+        {
+          "name": "constant.language.null.scp",
+          "match": "\\bnull\\b"
+        },
+        {
+          "name": "keyword.control.scp",
+          "match": "\\b(if|else|while|for|in|break|continue|return|match|case|default|try|catch|finally|throw)\\b"
+        },
+        {
+          "name": "keyword.control.import.scp",
+          "match": "\\b(import|as)\\b"
+        },
+        {
+          "name": "keyword.operator.word.scp",
+          "match": "\\b(and|or|not)\\b"
+        },
+        {
+          "name": "keyword.operator.new.scp",
+          "match": "\\bnew\\b"
+        },
+        {
+          "name": "keyword.other.scp",
+          "match": "\\b(on|every|after|command)\\b"
+        },
+        {
+          "name": "storage.type.scp",
+          "match": "\\b(let|const|global|fun)\\b"
+        },
+        {
+          "name": "constant.language.unit.scp",
+          "match": "\\b(ticks|seconds|minutes|hours|days)\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.scp",
+          "match": "\\b0[xX][0-9a-fA-F_]+\\b"
+        },
+        {
+          "name": "constant.numeric.float.scp",
+          "match": "\\b[0-9][0-9_]*\\.[0-9][0-9_]*(?:[eE][+-]?[0-9]+)?\\b|\\b[0-9][0-9_]*[eE][+-]?[0-9]+\\b"
+        },
+        {
+          "name": "constant.numeric.integer.scp",
+          "match": "\\b[0-9][0-9_]*\\b"
+        }
+      ]
+    },
+    "builtins": {
+      "patterns": [
+        {
+          "name": "support.function.builtin.scp",
+          "match": "\\b(broadcast|message|msg|console|player|players|world|give|item|heal|kill|teleport|sound|particle|setBlock|getBlock|spawn|dispatch|material|location|isPlayer|print|log|len|size|join|split|range|config|upper|lower|trim)\\b(?=\\s*\\()"
+        },
+        {
+          "name": "support.class.scp",
+          "match": "\\b[A-Z][A-Za-z0-9_]*\\b"
+        }
+      ]
+    },
+    "members": {
+      "patterns": [
+        {
+          "match": "(\\.)\\s*([A-Za-z_][A-Za-z0-9_]*)(?=\\s*\\()",
+          "captures": {
+            "1": { "name": "punctuation.accessor.scp" },
+            "2": { "name": "entity.name.function.scp" }
+          }
+        },
+        {
+          "match": "(\\.)\\s*([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "punctuation.accessor.scp" },
+            "2": { "name": "variable.other.property.scp" }
+          }
+        }
+      ]
+    },
+    "calls": {
+      "match": "\\b([A-Za-z_][A-Za-z0-9_]*)(?=\\s*\\()",
+      "name": "entity.name.function.scp"
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.nullish.scp",
+          "match": "\\?\\?"
+        },
+        {
+          "name": "keyword.operator.optional.scp",
+          "match": "\\?\\."
+        },
+        {
+          "name": "keyword.operator.range.scp",
+          "match": "\\.\\.<|\\.\\."
+        },
+        {
+          "name": "keyword.operator.logical.scp",
+          "match": "&&|\\|\\||!"
+        },
+        {
+          "name": "keyword.operator.comparison.scp",
+          "match": "==|!=|<=|>=|<|>"
+        },
+        {
+          "name": "keyword.operator.assignment.scp",
+          "match": "(?:[+\\-*/%]?=)"
+        },
+        {
+          "name": "keyword.operator.arithmetic.scp",
+          "match": "[+\\-*/%]"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.separator.comma.scp",
+          "match": ","
+        },
+        {
+          "name": "punctuation.terminator.statement.scp",
+          "match": ";"
+        },
+        {
+          "name": "punctuation.separator.colon.scp",
+          "match": ":"
+        },
+        {
+          "name": "punctuation.separator.question-mark.scp",
+          "match": "\\?"
+        },
+        {
+          "name": "punctuation.section.block.begin.scp",
+          "match": "\\{"
+        },
+        {
+          "name": "punctuation.section.block.end.scp",
+          "match": "\\}"
+        },
+        {
+          "name": "punctuation.section.parens.begin.scp",
+          "match": "\\("
+        },
+        {
+          "name": "punctuation.section.parens.end.scp",
+          "match": "\\)"
+        },
+        {
+          "name": "punctuation.section.brackets.begin.scp",
+          "match": "\\["
+        },
+        {
+          "name": "punctuation.section.brackets.end.scp",
+          "match": "\\]"
+        }
+      ]
+    }
+  }
+}

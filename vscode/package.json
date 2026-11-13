@@ -1,0 +1,68 @@
+{
+  "name": "scrippy-vscode",
+  "displayName": "ScrippyScript",
+  "description": "Syntax highlighting and language support for ScrippyScript (.scp)",
+  "version": "0.1.0",
+  "publisher": "ScrippyOffical",
+  "license": "GPL-3.0-only",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "scrippy",
+    "scp",
+    "minecraft",
+    "scripting",
+    "wasm"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ScrippyOffical/ScrippyScript",
+    "directory": "vscode"
+  },
+  "activationEvents": [
+    "onLanguage:scp"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "scp",
+        "aliases": [
+          "ScrippyScript",
+          "scp"
+        ],
+        "extensions": [
+          ".scp"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "scp",
+        "scopeName": "source.scp",
+        "path": "./syntaxes/scrippy.tmLanguage.json"
+      }
+    ],
+    "configurationDefaults": {
+      "[scp]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 4
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -w -p .",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.75.0",
+    "typescript": "^5.4.0"
+  }
+}

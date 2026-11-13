@@ -93,7 +93,25 @@ docs/
   LANGUAGE.md language reference
 .scp/
   demo.scp    sample script used by the example
+vscode/
+  syntaxes/   TextMate grammar for .scp files
+  src/        extension entry point
 ```
+
+## VS Code extension
+
+`vscode/` holds the editor extension: `.scp` syntax highlighting, comment
+toggling, bracket pairs and indentation.
+
+```sh
+curl -LO https://github.com/ScrippyOffical/ScrippyScript/releases/latest/download/scrippy-vscode-0.1.0.vsix
+code --install-extension scrippy-vscode-0.1.0.vsix
+```
+
+On the Flatpak build, use
+`flatpak run com.visualstudio.code --install-extension "$PWD/scrippy-vscode-0.1.0.vsix"`.
+Every `vscode-v*` tag builds a fresh package in `vsix.yml`, so the link above
+always serves the current version.
 
 ## WASM
 
