@@ -1,5 +1,7 @@
 # scrippy-script-core
 
+Disclaimer: AI code is used in said project, though all ideas are made by a human.
+
 [![ci](https://github.com/ScrippyOffical/ScrippyScript/actions/workflows/ci.yml/badge.svg)](https://github.com/ScrippyOffical/ScrippyScript/actions/workflows/ci.yml)
 
 Lexer, parser and syntax tree for ScrippyScript (`.scp`), the brace-based
