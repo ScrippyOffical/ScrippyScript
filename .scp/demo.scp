@@ -1,5 +1,3 @@
-// A script that stays inside the subset the Rust front end parses today.
-
 fun greet(name: string, greeting = "Hello") {
     return "${greeting}, ${name}!"
 }
@@ -20,5 +18,4 @@ for name in players {
     }
 }
 
-let stack = new ItemStack(material("DIAMOND_SWORD"), 1)
-ScrippyAI.ask("Twice 21 is ${twice(21)}")
+print("twice 21 is ${twice(21)}")

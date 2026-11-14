@@ -1,0 +1,452 @@
+SCRIPPYSCRIPT
+A small language that compiles to native code
+================================================================================
+
+WHAT IT IS
+----------
+
+ScrippyScript is a dynamically typed language with Rust-shaped syntax.
+Programs are plain text files ending in .scp. Braces mark blocks,
+statements end at a newline or a semicolon, and the language stays small
+on purpose.
+
+The compiler in this repository turns a script into a native executable.
+It parses the file, lowers it to C and runs the system C compiler. The
+result needs no interpreter, no Java and no Minecraft at run time.
+
+The same core language also runs inside a Paper plugin, which adds server
+events, commands and the Bukkit API. Those are host extensions. They are
+not needed for normal programs and are only summarized at the end.
+
+
+THE 30 SECOND VERSION
+---------------------
+
+    fun greet(name, greeting = "Hello") {
+        return "${greeting}, ${name}!"
+    }
+
+    for name in ["world", "Scrippy"] {
+        print(greet(name))
+    }
+
+Save that as hello.scp and run it:
+
+    scrippy run hello.scp
+
+Output:
+
+    Hello, world!
+    Hello, Scrippy!
+
+To keep the executable:
+
+    scrippy build hello.scp -o hello
+    ./hello
+
+
+REQUIREMENTS
+------------
+
+Building the compiler needs Rust 1.80 or newer.
+
+Compiling a program needs a C compiler: cc, gcc or clang. The compiler
+runs $CC when it is set, otherwise cc. It passes -std=c11 and links the
+math library.
+
+From a checkout:
+
+    cargo build --release -p scrippy
+    ./target/release/scrippy run examples/hello.scp
+
+Or install the command:
+
+    cargo install --path crates/scrippy
+
+
+COMMAND LINE
+------------
+
+    scrippy run <file.scp>              compile and run
+    scrippy build <file.scp> [-o path]  write an executable
+    scrippy check <file.scp>            parse and check only
+    scrippy emit-c <file.scp> [-o path] write the generated C
+
+Options:
+
+    -o, --output <path>   output path for build and emit-c
+    --keep-c              keep the generated C
+    -h, --help            show help
+    -V, --version         show the version
+
+check and emit-c do not call the C compiler. build and run do, so they
+need one installed.
+
+
+VALUES
+------
+
+    number     42, 0xFF, 3.14, 1e3
+    string     "double quoted", 'single quoted'
+    boolean    true, false
+    null       null
+    list       [1, 2, 3]
+    map        { name: "Steve", level: 3 }
+    function   fun(a, b) { return a + b }
+
+Whole numbers stay 64-bit integers until a decimal is needed. Strings are
+UTF-8. Map keys are converted to strings and keep insertion order.
+
+typeof(x) returns "number", "string", "boolean", "null", "list", "map"
+or "function".
+
+
+VARIABLES
+---------
+
+    let x = 10         // reassignable
+    const name = "hi"  // not reassignable
+    global visits = 0  // top-level binding
+
+global exists for scripts shared with the Paper host. In a native
+program it behaves like a top-level let.
+
+Assignment handles names, members and indexes:
+
+    x = x + 1
+    x += 5
+    scores["alice"] = 5
+    settings.name = "Steve"
+
+The compound forms are += -= *= /= %=.
+
+const is checked when the program compiles.
+
+
+TYPE HINTS
+----------
+
+Bindings and parameters may carry a hint:
+
+    fun twice(n: number) {
+        return n * 2
+    }
+
+    let player: player? = null
+
+The native compiler accepts hints and ignores them. They do not change
+runtime behavior and they do not reject bad values. The language has one
+runtime type system: values carry their own type.
+
+
+STRINGS
+-------
+
+Double quotes allow ${...} interpolation. Single quotes are literal.
+
+    let who = "world"
+    print("Hello, ${who}")
+    print('${who} stays as written')
+
+An interpolation cannot contain a double-quoted string of its own.
+Compute that value first:
+
+    let parts = "a,b".split(",")
+    print("count: ${len(parts)}")
+
+Strings index by character, not byte. Negative indexes count from the
+end.
+
+    let s = "Hello"
+    print(s[0])              // H
+    print(s[-1])             // o
+    print(s.size)            // 5
+    print(s.upper())         // HELLO
+    print(s.substring(1, 3)) // el
+
+String methods: upper, toUpperCase, lower, toLowerCase, trim, size,
+length, isEmpty, toString, contains, startsWith, endsWith, indexOf,
+charAt, at, split, replace, substring.
+
+split keeps empty parts, so "a,,b".split(",") has three items. Splitting
+on an empty separator returns one character per item.
+
+
+OPERATORS
+---------
+
+    arithmetic   + - * / %
+    comparison   == != < <= > >=
+    logic        && || !     also: and or not
+    ternary      cond ? a : b
+    coalescing   a ?? b
+    safe access  a?.b  and  a?.b()
+    ranges       1..5  (inclusive), 0..<10 (exclusive)
+
+Precedence runs unary, * / %, + -, ranges, comparisons, &&, ||, ??,
+ternary.
+
++ concatenates when either side is a string. The other arithmetic
+operators convert numeric strings, so "5" - 2 is 3.
+
+Division by zero stops the program. Integer division stays an integer
+when it divides evenly: 8 / 4 is 2, 10 / 4 is 2.5.
+
+Comparing a number with a string using < or > is an error. Compare
+numbers with numbers and strings with strings.
+
+These values are false: null, false, 0, "", [], {}. Everything else is
+true, including functions.
+
+
+CONTROL FLOW
+------------
+
+    if x > 5 {
+        print("big")
+    } else if x == 5 {
+        print("exact")
+    } else {
+        print("small")
+    }
+
+    while running {
+        tick()
+    }
+
+    for item in [1, 2, 3] {
+        print(item)
+    }
+
+    for i in 1..10 {
+        print(i)
+    }
+
+break and continue work inside loops. return leaves a function and
+otherwise ends the program.
+
+for walks a list, a map (its keys), a string (one character per step) or
+a range. A range is capped at one million elements.
+
+The native runtime allows 1000 nested calls. Deeper recursion stops with
+an error instead of crashing.
+
+
+FUNCTIONS
+---------
+
+    fun twice(n) {
+        return n * 2
+    }
+
+    fun greet(name, greeting = "Hello") {
+        print("${greeting}, ${name}!")
+    }
+
+    let add = fun(a, b) { return a + b }
+    print(add(1, 2))
+
+A default is evaluated when the argument is missing and may refer to
+earlier parameters. Every function also sees args, the list of values it
+was called with. Parameters and args are read-only, like const; assign
+to a let when you need to change a value.
+
+Functions capture their defining scope:
+
+    fun counter(start) {
+        let value = start
+        return fun(step = 1) {
+            value += step
+            return value
+        }
+    }
+
+    let next = counter(10)
+    print(next())   // 11
+    print(next(5))  // 16
+
+Too many arguments is an error. A missing argument without a default is
+an error too.
+
+
+LISTS
+-----
+
+    let items = [3, 1, 2]
+    items.add(5)
+    items.sort()
+    print(items.join("-"))  // 1-2-3-5
+    print(items.first)      // 1
+    print(items.last)       // 5
+
+List methods: add, get, set, remove, contains, indexOf, slice, join,
+sort, reverse, size, isEmpty, first, last.
+
+sort and reverse change the list in place. The global sort(list) and
+reverse(list) return a copy instead.
+
+remove takes an index for numbers. For any other value it removes every
+matching item.
+
+size, length, isEmpty, first and last also work as members without
+parentheses.
+
+
+MAPS
+----
+
+    let scores = { alice: 3, bob: 7 }
+    scores["carol"] = 9
+    scores.dave = 1
+    print(scores["alice"])  // 3
+    print(scores.bob)       // 7
+    print(scores.missing ?? 0)
+
+Map methods: get, put, set, containsKey, contains, remove,
+getOrDefault, keys, values, size, isEmpty.
+
+A missing key reads as null. Member access and index access do the same
+thing, and assigning to either creates or replaces the key.
+
+A map is plain data, not an object. m.size reads a key named size.
+m.size() returns the entry count. A zero-argument call whose name is not
+a method returns the value stored under that key.
+
+
+RANGES
+------
+
+    for i in 1..5 { print(i) }   // 1 2 3 4 5
+    for i in 1..<5 { print(i) }  // 1 2 3 4
+    print(range(2, 4))           // [2, 3, 4]
+
+Ranges count down when the start is larger than the end.
+
+
+STANDARD FUNCTIONS
+------------------
+
+Types and conversion:
+    str, toString, num, int, bool, typeof, isNull
+
+Collections:
+    len, size, list, add, remove, sort, reverse, join, split,
+    contains, keys, values, range
+
+Strings:
+    upper, lower, trim, replace, startsWith, endsWith, substring,
+    color, colorize
+
+Math:
+    abs, floor, ceil, round, sqrt, pow, min, max, random, randomInt
+
+Other:
+    now, uuid, print, log
+
+print writes its arguments separated by spaces and adds a newline.
+color turns & into the section sign used by Minecraft chat.
+
+
+ERRORS
+------
+
+Compile errors show the file, the line and column, the line itself and
+a caret:
+
+    scrippy: hello.scp:1:7: unknown variable or function `missing`
+      print(missing)
+            ^^^^^^^
+
+Runtime errors show the location and a call stack:
+
+    boom.scp:2:12: division by zero
+      at inner (boom.scp:6:12)
+      at outer (boom.scp:9:7)
+
+The process exits with status 1 after a compile or runtime error.
+
+
+HOW THE COMPILER WORKS
+----------------------
+
+1. The Rust front end lexes and parses the .scp file into a syntax tree.
+2. The backend lowers that tree to C. Variables become frame slots,
+   functions become C functions and closures become heap objects.
+3. The system C compiler builds the C with -O2 and links the runtime.
+4. run executes the result; build writes it where you asked.
+
+The runtime is a small C library included in the generated file. Values
+are tagged unions. Lists and maps are heap objects. Strings are UTF-8.
+
+Memory is reclaimed by a mark-sweep collector. It runs at statement
+boundaries, never in the middle of an expression, so a value held by the
+caller stays alive while a called function allocates. Closures keep
+their defining frame alive.
+
+This is a native backend, not C speed. Every value is tagged, every call
+goes through a dispatcher and maps use a linear scan. Startup is fast
+and there is no interpreter loop, but throughput is scripting-language
+throughput.
+
+
+WHAT IT DOES NOT DO
+-------------------
+
+The native compiler is not a type checker. Type hints are decoration.
+
+There is no file, network or process API. A native program computes
+values and prints them; it cannot read a file or open a socket.
+
+A native program cannot use Minecraft objects: player, material,
+ItemStack, ScrippyAI, config or any other plugin name. new is rejected
+because there is no host to construct objects.
+
+The shared Rust parser does not accept on, command, every, after, match,
+try, catch, finally, throw or import. Those are Paper-only. The compiler
+reports a normal parse error for them.
+
+Native programs are single files. Modules and imports exist only on the
+Paper side.
+
+
+PAPER HOST
+----------
+
+The Paper plugin interprets the same core language and adds:
+
+    on join { ... }                 event handlers
+    command "heal" { ... }          plugin commands
+    every 30 seconds { ... }        scheduled blocks
+    match x { case 1: ... }         match blocks
+    try { ... } catch err { ... }   error handling
+    import "lib/util.scp"           shared scripts
+
+It also exposes Bukkit objects through reflection: player.name,
+block.type, world.getBlockAt(...) and so on. Server helpers such as
+message, broadcast, give, heal and teleport exist there.
+
+Those features need a running server. They are not part of the native
+language and this handout does not cover their details.
+
+
+FILES AND LAYOUT
+----------------
+
+    src/                  lexer, parser, AST and errors
+    crates/scrippy/       native compiler and command line
+      src/codegen.rs      AST to C
+      src/runtime.c       value runtime, collector, standard functions
+      src/main.rs         command line
+      tests/run.rs        end-to-end tests
+    examples/             runnable .scp programs
+    docs/                 this handout and the language reference
+    vscode/               editor extension
+
+The language reference in docs/LANGUAGE.md has the full method lists
+and the exact rules.
+
+
+LICENSE
+-------
+
+GPL-3.0. See LICENSE in the repository.

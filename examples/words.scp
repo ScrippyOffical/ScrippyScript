@@ -1,0 +1,22 @@
+// Count words and report the ones used more than once.
+
+let text = "the quick brown fox jumps over the lazy dog the fox"
+let words = text.split(" ")
+
+let counts = {}
+for word in words {
+    counts[word] = (counts[word] ?? 0) + 1
+}
+
+let repeated = []
+for word in counts.keys() {
+    if counts[word] > 1 {
+        repeated.add(word)
+    }
+}
+
+repeated.sort()
+let joined = repeated.join(", ")
+print("repeated: ${joined}")
+print("total words: ${len(words)}")
+print("unique words: ${counts.size()}")

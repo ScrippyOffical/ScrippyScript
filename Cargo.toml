@@ -1,3 +1,8 @@
+[workspace]
+members = ["crates/scrippy"]
+default-members = [".", "crates/scrippy"]
+resolver = "2"
+
 [package]
 name = "scrippy-script-core"
 version = "0.1.0"

@@ -1,0 +1,11 @@
+[package]
+name = "scrippy"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+description = "Native compiler and command line for ScrippyScript (.scp)"
+license = "GPL-3.0-only"
+repository = "https://github.com/ScrippyOffical/ScrippyScript"
+
+[dependencies]
+scrippy-script-core = { path = "../.." }

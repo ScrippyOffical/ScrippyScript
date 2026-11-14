@@ -1,0 +1,11 @@
+fun greet(name, greeting = "Hello") {
+    return "${greeting}, ${name}!"
+}
+
+let people = ["world", "Scrippy"]
+
+for name in people {
+    print(greet(name))
+}
+
+print(greet("again", "Bye"))
